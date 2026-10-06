@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tugas 4 - JavaScript DOM & Form Handling</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+      background-color: #f9f9f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .header-box {
+      border: 2px solid #333;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-radius: 5px;
+    }
+    .header-box img {
+      width: 80px;
+      height: 100px;
+      object-fit: cover;
+      border: 1px solid #ccc;
+    }
+    .form-step {
+      margin-top: 15px;
+      padding: 15px;
+      border-left: 4px solid #007bff;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+    }
+    .input-group {
+      margin-bottom: 12px;
+    }
+    label {
+      display: inline-block;
+      width: 130px;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="number"], input[type="email"], select {
+      padding: 6px 10px;
+      width: 220px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 6px 16px;
+      margin-top: 8px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header Informasi Diri -->
+  <div class="header-box">
+    <img src="foto-profil.jpg" alt="Foto Profil">
+    <div>
+      <h3 style="margin: 0;">Oktovianus Nong Niku</h3>
+      <p style="margin: 5px 0;">NIM: 255314121</p>
+    </div>
+  </div>
+
+  <h2>Form Pilihan Dinamis</h2>
+
+  <!-- Tahap 1: Input Nama & Jumlah Pilihan -->
+  <div id="step1" class="form-step">
+    <div class="input-group">
+      <label for="nama">Nama :</label>
+      <input type="text" id="nama" placeholder="Masukkan Nama">
+    </div>
+    <div class="input-group">
+      <label for="jml">Jumlah Pilihan :</label>
+      <!-- Input number dengan spinner dan min=1 -->
+      <input type="number" id="jml" min="1" placeholder="Masukkan Angka">
+    </div>
+    <button type="button" onclick="prosesStep1()">OK</button>
+  </div>
+
+  <!-- Tahap 2: Loop Dynamic Input Teks Pilihan -->
+  <div id="step2" class="form-step" style="display: none;">
+    <div id="containerPilihanInput"></div>
+    <button type="button" onclick="prosesStep2()">OK</button>
+  </div>
+
+  <!-- Tahap 3: Tampilan Radio Button atau Dropdown -->
+  <div id="step3" class="form-step" style="display: none;">
+    <p><strong>Pilih salah satu opsi:</strong></p>
+    <div id="containerRadio" class="input-group"></div>
+    
+    <p><strong>Atau pilih dari Drop-down:</strong></p>
+    <select id="dropdownPilihan"></select>
+    <br>
+    <button type="button" onclick="prosesStep3()">OK</button>
+  </div>
+
+  <!-- Tahap 4: Input Email (Pattern Matching) -->
+  <div id="step4" class="form-step" style="display: none;">
+    <div class="input-group">
+      <label for="email">Email :</label>
+      <input type="email" id="email" placeholder="email@domain.com">
+    </div>
+    <button type="button" onclick="prosesStep4()">OK</button>
+  </div>
+
+  <!-- Tahap 5: Output JavaScript DOM -->
+  <div id="step5" class="result-box" style="display: none;">
+    <p id="hasilTeks"></p>
+  </div>
+</div>
+
+<script>
+  // Array dan Objek untuk menyimpan state data
+  let data = {
+    nama: "",
+    jml: 0,
+    pilihanList: [], // Array untuk menyimpan teks opsi pilihan
+    pilihanTerpilih: "",
+    email: ""
+  };
+
+  // Tahap 1: Validasi Nama dan Jumlah Pilihan
+  function prosesStep1() {
+    const namaInput = document.getElementById("nama").value.trim();
+    const jmlInput = parseInt(document.getElementById("jml").value);
+
+    // Error Handling Input Teks
+    if (namaInput === "") {
+      alert("Error: Nama tidak boleh kosong!");
+      return;
+    }
+    
+    // Error Handling Input Number / Spinner
+    if (isNaN(jmlInput) || jmlInput <= 0) {
+      alert("Error: Jumlah Pilihan harus berupa angka dan lebih besar dari 0!");
+      return;
+    }
+
+    data.nama = namaInput;
+    data.jml = jmlInput;
+
+    document.getElementById("nama").disabled = true;
+    document.getElementById("jml").disabled = true;
+
+    // Loop untuk membuat input pilihan secara dinamis
+    const container = document.getElementById("containerPilihanInput");
+    container.innerHTML = "";
+    for (let i = 1; i <= data.jml; i++) {
+      container.innerHTML += `
+        <div class="input-group">
+          <label for="pilih_${i}">Pilihan ${i} :</label>
+          <input type="text" id="pilih_${i}" placeholder="Teks Pilihan ${i}">
+        </div>
+      `;
+    }
+
+    document.getElementById("step2").style.display = "block";
+  }
+
+  // Tahap 2: Menyimpan Teks ke Array & Membuat Radio/Dropdown
+  function prosesStep2() {
+    let tempPilihan = [];
+    for (let i = 1; i <= data.jml; i++) {
+      const val = document.getElementById(`pilih_${i}`).value.trim();
+      if (val === "") {
+        alert(`Error: Pilihan ${i} belum diisi! Silakan masukan ulang.`);
+        return;
+      }
+      tempPilihan.push(val); // Array push
+    }
+
+    data.pilihanList = tempPilihan;
+
+    for (let i = 1; i <= data.jml; i++) {
+      document.getElementById(`pilih_${i}`).disabled = true;
+    }
+
+    // Loop untuk membuat Radio Button dan Drop-down (Select Options)
+    const containerRadio = document.getElementById("containerRadio");
+    const dropdown = document.getElementById("dropdownPilihan");
+    
+    containerRadio.innerHTML = "";
+    dropdown.innerHTML = "";
+
+    data.pilihanList.forEach((teks, index) => {
+      // Loop Radio Button
+      containerRadio.innerHTML += `
+        <div style="margin-bottom: 5px;">
+          <input type="radio" id="radio_${index}" name="pilihanOpsi" value="${teks}" ${index === 0 ? 'checked' : ''}>
+          <label for="radio_${index}" style="width: auto;">${teks}</label>
+        </div>
+      `;
+
+      // Loop Drop-down Option
+      dropdown.innerHTML += `<option value="${teks}">${teks}</option>`;
+    });
+
+    document.getElementById("step3").style.display = "block";
+  }
+
+  // Tahap 3: Memilih Pilihan Opsi
+  function prosesStep3() {
+    const selectedRadio = document.querySelector('input[name="pilihanOpsi"]:checked');
+    if (!selectedRadio) {
+      alert("Error: Silakan pilih salah satu opsi!");
+      return;
+    }
+
+    data.pilihanTerpilih = selectedRadio.value;
+
+    const radios = document.getElementsByName("pilihanOpsi");
+    radios.forEach(r => r.disabled = true);
+    document.getElementById("dropdownPilihan").disabled = true;
+
+    document.getElementById("step4").style.display = "block";
+  }
+
+  // Tahap 4: Error Handling Email dengan Pattern Matching Regex
+  function prosesStep4() {
+    const emailInput = document.getElementById("email").value.trim();
+    
+    // Pattern Matching Regular Expression untuk Email
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(emailInput)) {
+      alert("Error: Format email tidak valid! Silakan masukkan email yang benar (contoh: email@domain.com).");
+      return;
+    }
+
+    data.email = emailInput;
+    document.getElementById("email").disabled = true;
+
+    // Formatting Daftar Pilihan Array untuk Tampilan Output
+    let daftarPilihanTeks = "";
+    if (data.pilihanList.length === 1) {
+      daftarPilihanTeks = data.pilihanList[0];
+    } else {
+      const opsiAwal = data.pilihanList.slice(0, -1).join(", ");
+      const opsiTerakhir = data.pilihanList[data.pilihanList.length - 1];
+      daftarPilihanTeks = `${opsiAwal}, dan ${opsiTerakhir}`;
+    }
+
+    // Output Manipulasi JavaScript DOM
+    const hasilKalimat = `Hallo, nama saya ${data.nama}, email ${data.email} saya mempunyai sejumlah ${data.jml} pilihan yaitu ${daftarPilihanTeks}, dan saya memilih ${data.pilihanTerpilih}`;
+
+    document.getElementById("hasilTeks").innerText = hasilKalimat;
+    document.getElementById("step5").style.display = "block";
+  }
+</script>
+
+</body>
+</html>
